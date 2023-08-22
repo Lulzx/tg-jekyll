@@ -19,13 +19,14 @@ dp = Dispatcher(bot)
 openai.api_key = OPENAI_API_KEY
 
 def generate_text(prompt):
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=50,
-        stop=None
-    )
-    return response.choices[0].text.strip()
+    messages = [ {"role": "user", "content": prompt} ]
+    response = openai.ChatCompletion.create(
+            model = "gpt-3.5-turbo",
+            messages = messages,
+            temperature = 1.0
+        )
+    return response.choices[0].message.content.strip()
+
 
 def generate_title(post_content):
     title_prompt = f"Generate a title for a blog post about the following content:\n{post_content}"
@@ -37,12 +38,12 @@ def generate_category(post_content):
 
 def create_and_push_blog_post(filename, content):
     file_path = os.path.join(REPO_PATH, 'blog', '_posts', filename)
-    
+
     front_matter = (
         "---\n"
         f"layout: post\n"
         f"title: \"{generate_title(content)}\"\n"
-        f"date: {{% raw %}}{{{{ now | date: '%Y-%m-%d %H:%M' }}}}{% endraw %}\n"
+        f"date: {{% raw %}}{{{{ now | date: '%Y-%m-%d %H:%M' }}}}{{% endraw %}}\n"
         "comments: true\n"
         f"categories: {generate_category(content)}\n"
         "---\n"
